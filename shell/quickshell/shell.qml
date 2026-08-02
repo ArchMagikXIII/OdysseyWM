@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import "widgets" 
 
 PanelWindow {
     id: panel
@@ -11,7 +12,7 @@ PanelWindow {
         right: true
     }
 
-    height: 24
+    height: 28
 
     color: "#0B0F17"
 
@@ -36,37 +37,31 @@ PanelWindow {
         }
 
 
-        Item {
-            anchors.verticalCenter: parent.verticalCenter
+Item {
+    anchors.verticalCenter: parent.verticalCenter
 
-            width: 400
-            height: parent.height
+    width: 400
+    height: parent.height
 
-            Text {
-                anchors.centerIn: parent
-
-                text: "1   2   3   4   5"
-
-                color: "#AAB2C0"
-
-                font.pixelSize: 13
-            }
-        }
-
+    Workspaces {
+        anchors.centerIn: parent
+    }
+}
 
         Item {
-            anchors.fill: parent
+    width: 250
+    height: parent.height
 
-            Text {
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
+    anchors.verticalCenter: parent.verticalCenter
 
-                text: "CPU  RAM  GPU  WiFi  🔋"
+    Row {
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
 
-                color: "#AAB2C0"
+        spacing: 8
 
-                font.pixelSize: 13
-            }
-        }
+        
+    }
+}
     }
 }
