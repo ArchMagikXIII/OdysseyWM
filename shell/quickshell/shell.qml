@@ -1,10 +1,9 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import "widgets" 
+import "widgets"
 
 PanelWindow {
-    id: panel
 
     anchors {
         top: true
@@ -12,56 +11,63 @@ PanelWindow {
         right: true
     }
 
-    height: 28
+    implicitHeight: 28
 
     color: "#0B0F17"
 
+
+    // LEFT
     Row {
-        anchors.fill: parent
 
-        anchors.leftMargin: 12
-        anchors.rightMargin: 12
+        anchors {
+            left: parent.left
+            verticalCenter: parent.verticalCenter
+            leftMargin: 12
+        }
 
-        spacing: 20
+        spacing: 10
+
 
         Text {
-            width: 200
 
             text: "ODYSSEY"
+
             color: "#FFFFFF"
 
             font.pixelSize: 14
             font.bold: true
-
-            verticalAlignment: Text.AlignVCenter
         }
-
-
-Item {
-    anchors.verticalCenter: parent.verticalCenter
-
-    width: 400
-    height: parent.height
-
-    Workspaces {
-        anchors.centerIn: parent
     }
-}
 
-        Item {
-    width: 250
-    height: parent.height
 
-    anchors.verticalCenter: parent.verticalCenter
-
+    // CENTER
     Row {
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
+
+        anchors.centerIn: parent
+
+        Workspaces {}
+    }
+
+
+    // RIGHT
+    Row {
+
+        anchors {
+            right: parent.right
+            verticalCenter: parent.verticalCenter
+            rightMargin: 12
+        }
 
         spacing: 8
 
-        
-    }
-}
+
+        Text {
+
+            text: "CPU  RAM  GPU  WiFi  🔋"
+
+            color: "#AAB2C0"
+
+            font.pixelSize: 13
+        }
     }
 }
