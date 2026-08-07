@@ -17,20 +17,45 @@
     color: @text;
 }
 
+#workspaces {
+    background: transparent;
+}
+
+
 #workspaces button {
+
     background: transparent;
 
     color: @text-muted;
 
-    padding: 0 10px;
+    padding: 0 6px;
 
-    margin: 5px;
+    margin: 5px 2px;
 
-    border-radius: 999px;
+    border-radius: 50%;
+
+    min-width: 18px;
+
+    min-height: 18px;
 }
 
-#workspaces button.focused {
-    background: @accent;
 
-    color: @background;
+#workspaces button:hover {
+
+    color: @text;
+
+}
+
+
+#workspaces button.focused {
+
+    color: @accent;
+
+}
+
+
+#workspaces button.urgent {
+
+    color: #ff5f56;
+
 }
