@@ -56,16 +56,19 @@
     "network": {
         "format-wifi": "󰤨",
         "format-ethernet": "󰈀",
-        "format-disconnected": "󰤭"
+        "format-disconnected": "󰤭",
+        "on-click": "foot -e impala"   
     },
 
     "bluetooth": {
-        "format": ""
+        "format": "",
+        "on-click": "foot -e bluetui"   
     },
 
     "pulseaudio": {
         "format": "{icon} {volume}%",
-        "format-muted": "󰖁"
+        "format-muted": "󰖁",
+        "on-click": "pavucontrol"
     },
 
     "battery": {
@@ -75,5 +78,11 @@
 
     "clock": {
         "format": "{:%a %b %d  %I:%M %p}"
+    },
+
+    "gpu": {
+       "format": "󰍛 {usage}%"
+    
     }
+  
 }
