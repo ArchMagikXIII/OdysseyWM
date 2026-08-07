@@ -1,0 +1,66 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 28,
+
+    "modules-left": [
+        "custom/odyssey"
+    ],
+
+    "modules-center": [
+        "sway/workspaces"
+    ],
+
+    "modules-right": [
+        "cpu",
+        "memory",
+        "network",
+        "bluetooth",
+        "pulseaudio",
+        "battery",
+        "clock"
+    ],
+
+    "custom/odyssey": {
+        "format": "⬢ ODYSSEY",
+        "tooltip": false
+    },
+
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": true,
+        "format": "{name}"
+    },
+
+    "cpu": {
+        "format": "󰍛 {usage}%"
+    },
+
+    "memory": {
+        "format": "󰘚 {percentage}%"
+    },
+
+    "network": {
+        "format-wifi": "󰤨",
+        "format-ethernet": "󰈀",
+        "format-disconnected": "󰤭"
+    },
+
+    "bluetooth": {
+        "format": ""
+    },
+
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": "󰖁"
+    },
+
+    "battery": {
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%"
+    },
+
+    "clock": {
+        "format": "{:%a %b %d  %I:%M %p}"
+    }
+}
