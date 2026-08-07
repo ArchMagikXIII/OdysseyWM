@@ -19,7 +19,7 @@
         "bluetooth",
         "pulseaudio",
         "battery",
-        "gpu"
+        "gpu",
     ],
 
     "custom/odyssey": {
@@ -80,9 +80,4 @@
         "format": "{:%a %b %d  %I:%M %p}"
     },
 
-    "gpu": {
-       "format": "󰍛 {usage}%"
-    
-    }
-  
-}
+  }
