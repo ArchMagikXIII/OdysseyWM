@@ -4,7 +4,8 @@
     "height": 28,
 
     "modules-center": [
-        "custom/odyssey"
+        "custom/odyssey",
+        "clock"
     ],
 
     "modules-left": [
@@ -18,11 +19,11 @@
         "bluetooth",
         "pulseaudio",
         "battery",
-        "clock"
+        "gpu"
     ],
 
     "custom/odyssey": {
-        "format": "⬢ ODYSSEY",
+        "format": "⬢ MagikXIII",
         "tooltip": false
     },
 
