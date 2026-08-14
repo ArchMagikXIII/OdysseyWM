@@ -1,6 +1,8 @@
 #custom-odyssey,
 #cpu,
 #memory,
+#custom-gpu-amd,
+#custom-gpu-nvidia,
 #network,
 #bluetooth,
 #pulseaudio,
@@ -17,13 +19,53 @@
     color: @text;
 }
 
+#pulseaudio-slider {
+    background: @surface;
+
+    padding: 0 10px;
+
+    margin: 5px;
+
+    border-radius: 10px;
+
+    min-width: 80px;
+}
+
+#pulseaudio-slider trough {
+    min-height: 4px;
+
+    min-width: 70px;
+
+    border-radius: 2px;
+
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+#pulseaudio-slider highlight {
+    min-height: 4px;
+
+    border-radius: 2px;
+
+    background-color: @accent;
+}
+
+#pulseaudio-slider slider {
+    min-height: 10px;
+
+    min-width: 10px;
+
+    border-radius: 50%;
+
+    background-color: @text;
+
+    box-shadow: none;
+}
+
 #workspaces {
     background: transparent;
 }
 
-
 #workspaces button {
-
     background: transparent;
 
     color: @text-muted;
@@ -39,23 +81,14 @@
     min-height: 18px;
 }
 
-
 #workspaces button:hover {
-
     color: @text;
-
 }
-
 
 #workspaces button.focused {
-
     color: @accent;
-
 }
 
-
 #workspaces button.urgent {
-
     color: #ff5f56;
-
 }

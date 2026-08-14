@@ -15,11 +15,13 @@
     "modules-right": [
         "cpu",
         "memory",
+        "custom/gpu-amd",
+        "custom/gpu-nvidia",
         "network",
         "bluetooth",
         "pulseaudio",
-        "battery",
-        "gpu",
+        "pulseaudio/slider",
+        "battery"
     ],
 
     "custom/odyssey": {
@@ -28,21 +30,21 @@
     },
 
     "sway/workspaces": {
-     "disable-scroll": true,
-     "all-outputs": true,
-     "format": "{icon}",
-     "format-icons": {
-        "1": "●",
-        "2": "●",
-        "3": "●",
-        "4": "○",
-        "5": "○",
-        "6": "○",
-        "7": "○",
-        "8": "○",
-        "9": "○",
-        "10": "○"
-      }
+        "disable-scroll": true,
+        "all-outputs": true,
+        "format": "{icon}",
+        "format-icons": {
+            "1": "●",
+            "2": "●",
+            "3": "●",
+            "4": "○",
+            "5": "○",
+            "6": "○",
+            "7": "○",
+            "8": "○",
+            "9": "○",
+            "10": "○"
+        }
     },
 
     "cpu": {
@@ -51,6 +53,22 @@
 
     "memory": {
         "format": "󰘚 {percentage}%"
+    },
+
+    "custom/gpu-amd": {
+        "exec": "/home/magikxiii/.config/waybar/scripts/gpu_amd.sh",
+        "return-type": "json",
+        "format": "󰢮 {}",
+        "interval": 2,
+        "tooltip": true
+    },
+
+    "custom/gpu-nvidia": {
+        "exec": "/home/magikxiii/.config/waybar/scripts/gpu_nvidia.sh",
+        "return-type": "json",
+        "format": "󰢮 {}",
+        "interval": 2,
+        "tooltip": true
     },
 
     "network": {
@@ -68,7 +86,22 @@
     "pulseaudio": {
         "format": "{icon} {volume}%",
         "format-muted": "󰖁",
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        },
         "on-click": "pavucontrol"
+    },
+
+    "pulseaudio/slider": {
+        "min": 0,
+        "max": 100,
+        "orientation": "horizontal"
     },
 
     "battery": {
@@ -78,6 +111,5 @@
 
     "clock": {
         "format": "{:%a %b %d  %I:%M %p}"
-    },
-
-  }
+    }
+}
