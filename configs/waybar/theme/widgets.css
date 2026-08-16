@@ -19,6 +19,11 @@
     color: @text;
 }
 
+#network,
+#bluetooth {
+    font-size: 18px;
+}
+
 #pulseaudio-slider {
     background: @surface;
 
@@ -46,7 +51,7 @@
 
     border-radius: 2px;
 
-    background-color: @accent;
+    background-color: #000000;
 }
 
 #pulseaudio-slider slider {

@@ -3,13 +3,13 @@
 
 * {
     font-family: "JetBrainsMono Nerd Font", "JetBrains Mono";
-    font-size: 13px;
+    font-size: 16px;
     border: none;
     border-radius: 0;
 }
 
 window#waybar {
-    background: rgba(11,15,23,0.92);
+    background: #000000;
     color: #ffffff;
 
     border-radius: 14px;
