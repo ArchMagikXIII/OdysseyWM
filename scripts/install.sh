@@ -383,10 +383,12 @@ install_packages() {
                                 sudo dnf install -y dbus-devel pkgconf-pkg-config 2>/dev/null || true
                             fi
                             if command -v cargo &>/dev/null; then
-                                log_step "Installing $pkg via cargo..."
-                                cargo install "$pkg" 2>/dev/null && log_success "$pkg installed" || log_warn "$pkg install failed"
+                                local cargo_name="$pkg"
+                                [[ "$pkg" == "impala" ]] && cargo_name="impala-nm"
+                                log_step "Installing $cargo_name via cargo..."
+                                cargo install "$cargo_name" 2>/dev/null && log_success "$cargo_name installed" || log_warn "$cargo_name install failed"
                             else
-                                log_info "  $pkg: Install rust first (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh), then: cargo install $pkg"
+                                log_info "  $pkg: Install rust first (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh), then: cargo install impala-nm"
                             fi
                             ;;
                     esac
