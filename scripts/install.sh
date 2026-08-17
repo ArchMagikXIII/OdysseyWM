@@ -234,6 +234,51 @@ pkg_in_repo() {
     fi
 }
 
+# ----------------------------------------- Fedora Repos -----------------------------------------
+
+setup_fedora_repos() {
+    section "Fedora Repository Setup"
+
+    # Ensure dnf-plugins-core is available for repo management
+    sudo dnf install -y dnf-plugins-core 2>/dev/null || true
+
+    # RPM Fusion (free + nonfree) — needed for codecs, firmware, etc.
+    local FEDORA_VERSION
+    FEDORA_VERSION=$(rpm -E %fedora 2>/dev/null)
+
+    if ! rpm -q rpmfusion-free-release &>/dev/null; then
+        log_step "Installing RPM Fusion Free..."
+        sudo dnf install -y \
+            "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_VERSION}.noarch.rpm" 2>/dev/null \
+            && log_success "RPM Fusion Free added" \
+            || log_warn "RPM Fusion Free install failed"
+    else
+        log_info "RPM Fusion Free already installed"
+    fi
+
+    if ! rpm -q rpmfusion-nonfree-release &>/dev/null; then
+        log_step "Installing RPM Fusion Non-Free..."
+        sudo dnf install -y \
+            "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_VERSION}.noarch.rpm" 2>/dev/null \
+            && log_success "RPM Fusion Non-Free added" \
+            || log_warn "RPM Fusion Non-Free install failed"
+    else
+        log_info "RPM Fusion Non-Free already installed"
+    fi
+
+    # Refresh metadata after adding repos
+    sudo dnf makecache 2>/dev/null || true
+
+    # Brave browser
+    if ! rpm -q brave-browser &>/dev/null && ! dnf repoquery --quiet brave-browser &>/dev/null 2>&1; then
+        log_step "Adding Brave browser repo..."
+        sudo dnf config-manager addrepo --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo 2>/dev/null || true
+        sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc 2>/dev/null || true
+    fi
+
+    log_success "Fedora repos configured"
+}
+
 install_packages() {
     section "Package Installation"
 
@@ -330,6 +375,9 @@ install_packages() {
         echo ""
 
         if [[ "$DISTRO" == "fedora" ]]; then
+            # Set up third-party repos FIRST so packages are discoverable
+            setup_fedora_repos
+
             # Fedora: split into repo vs third-party
             local repo_pkgs=()
             local thirdparty_pkgs=()
@@ -357,14 +405,6 @@ install_packages() {
             # Handle third-party packages — attempt install where possible
             if [[ ${#thirdparty_pkgs[@]} -gt 0 ]]; then
                 log_warn "${#thirdparty_pkgs[@]} packages need third-party repos: ${thirdparty_pkgs[*]}"
-
-                # Ensure dnf-plugins-core is available for repo management
-                sudo dnf install -y dnf-plugins-core 2>/dev/null || true
-
-                # Add Brave browser repo upfront
-                log_step "Adding Brave browser repo..."
-                sudo dnf config-manager addrepo --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo 2>/dev/null || true
-                sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc 2>/dev/null || true
 
                 for pkg in "${thirdparty_pkgs[@]}"; do
                     case "$pkg" in
