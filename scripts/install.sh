@@ -375,20 +375,17 @@ install_packages() {
                                 log_warn "Brave install failed — install manually from https://brave.com/download"
                             fi
                             ;;
-                        impala)
-                            if command -v cargo &>/dev/null; then
-                                log_step "Installing impala via cargo..."
-                                cargo install impala 2>/dev/null && log_success "impala installed" || log_warn "impala install failed"
-                            else
-                                log_info "  impala: Install rust first (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh), then: cargo install impala"
+                        impala|bluetui)
+                            # Install build deps for cargo compilation
+                            if [[ "$DISTRO" == "fedora" ]]; then
+                                log_step "Installing cargo build dependencies..."
+                                sudo dnf install -y dbus-devel pkgconf-pkg-config 2>/dev/null || true
                             fi
-                            ;;
-                        bluetui)
                             if command -v cargo &>/dev/null; then
-                                log_step "Installing bluetui via cargo..."
-                                cargo install bluetui 2>/dev/null && log_success "bluetui installed" || log_warn "bluetui install failed"
+                                log_step "Installing $pkg via cargo..."
+                                cargo install "$pkg" 2>/dev/null && log_success "$pkg installed" || log_warn "$pkg install failed"
                             else
-                                log_info "  bluetui: Install rust first (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh), then: cargo install bluetui"
+                                log_info "  $pkg: Install rust first (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh), then: cargo install $pkg"
                             fi
                             ;;
                     esac
