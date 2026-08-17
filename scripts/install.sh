@@ -197,14 +197,16 @@ pkg_name() {
             # Auth
             polkit-gnome)            echo "polkit" ;;
             # Network
-            network-manager-applet)  echo "NetworkManager-applet" ;;
+            network-manager-applet)  echo "network-manager-applet" ;;
             # Wayland
             wl-clipboard)            echo "wl-clipboard" ;;
             xdg-desktop-portal-wlr)  echo "xdg-desktop-portal-wlr" ;;
             xdg-desktop-portal)      echo "xdg-desktop-portal" ;;
+            # Audio
+            pipewire-pulseaudio)     echo "pipewire-pulseaudio" ;;
             # Fonts
-            ttf-jetbrains-mono-nerd) echo "google-jetbrains-mono-fonts" ;;
-            noto-emoji-color-fonts)  echo "google-noto-color-emoji-fonts" ;;
+            ttf-jetbrains-mono-nerd) echo "jetbrains-mono-fonts" ;;
+            noto-emoji-color-fonts)  echo "google-noto-emoji-color-fonts" ;;
             google-noto-sans-fonts)  echo "google-noto-sans-fonts" ;;
             # Everything else passes through unchanged
             *)                        echo "$name" ;;
@@ -371,7 +373,12 @@ install_packages() {
                             fi
                             ;;
                         impala)
-                            log_info "  impala: Install from https://github.com/pythops/impala"
+                            if command -v cargo &>/dev/null; then
+                                log_step "Installing impala via cargo..."
+                                cargo install impala 2>/dev/null && log_success "impala installed" || log_warn "impala install failed"
+                            else
+                                log_info "  impala: Install rust first (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh), then: cargo install impala"
+                            fi
                             ;;
                         bluetui)
                             if command -v cargo &>/dev/null; then
@@ -385,39 +392,6 @@ install_packages() {
                 done
             fi
 
-            # Handle third-party packages (brave, impala, bluetui) — not in any repo
-            # Ensure dnf-plugins-core is available for repo management
-            sudo dnf install -y dnf-plugins-core 2>/dev/null || true
-
-            for pkg in "${AUR_PKGS[@]}"; do
-                local rpkg
-                rpkg=$(pkg_name "$pkg")
-                if ! pkg_installed "$rpkg"; then
-                    case "$pkg" in
-                        brave-browser)
-                            log_step "Setting up Brave browser..."
-                            sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo 2>/dev/null
-                            sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc 2>/dev/null
-                            if sudo dnf install -y brave-browser 2>/dev/null; then
-                                log_success "Brave browser installed"
-                            else
-                                log_warn "Brave install failed — install manually from https://brave.com/download"
-                            fi
-                            ;;
-                        impala)
-                            log_info "  impala: Install from https://github.com/pythops/impala"
-                            ;;
-                        bluetui)
-                            if command -v cargo &>/dev/null; then
-                                log_step "Installing bluetui via cargo..."
-                                cargo install bluetui 2>/dev/null && log_success "bluetui installed" || log_warn "bluetui install failed"
-                            else
-                                log_info "  bluetui: Install rust first (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh), then: cargo install bluetui"
-                            fi
-                            ;;
-                    esac
-                fi
-            done
         else
             # Arch: split into repo vs AUR
             local aur_pkgs=()
@@ -596,6 +570,17 @@ deploy_configs() {
     if [[ "$CREATE_USER" == "true" ]]; then
         chown -R "$USERNAME:$USERNAME" "$TARGET_HOME/.config"
         chown -R "$USERNAME:$USERNAME" "$TARGET_HOME/.local"
+    fi
+
+    # Ensure ~/.cargo/bin is in PATH for cargo-installed tools (impala, bluetui, etc.)
+    local PROFILE="$TARGET_HOME/.bashrc"
+    [[ "$USER_SHELL" == "/bin/zsh" ]] && PROFILE="$TARGET_HOME/.zshrc"
+    if ! grep -q 'cargo/bin' "$PROFILE" 2>/dev/null; then
+        log_step "Adding cargo bin to PATH in $PROFILE..."
+        echo '' >> "$PROFILE"
+        echo '# Cargo (Rust)' >> "$PROFILE"
+        echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> "$PROFILE"
+        log_success "cargo PATH configured"
     fi
 }
 
