@@ -194,19 +194,22 @@ pkg_name() {
     local name="$1"
     if [[ "$DISTRO" == "fedora" ]]; then
         case "$name" in
+            # Display manager
             qt6-declarative)         echo "qt6-qtdeclarative" ;;
+            # Auth
+            polkit-gnome)            echo "polkit" ;;
+            # Network
             network-manager-applet)  echo "NetworkManager-applet" ;;
-            ttf-jetbrains-mono-nerd) echo "jetbrains-mono-nerd-fonts" ;;
-            swaybg)                  echo "swaybg" ;;
+            # Wayland
             wl-clipboard)            echo "wl-clipboard" ;;
-            grim)                    echo "grim" ;;
-            slurp)                   echo "slurp" ;;
-            swayidle)                echo "swayidle" ;;
-            mako)                    echo "mako" ;;
             xdg-desktop-portal-wlr)  echo "xdg-desktop-portal-wlr" ;;
             xdg-desktop-portal)      echo "xdg-desktop-portal" ;;
-            imv)                     echo "imv" ;;
-           *)                        echo "$name" ;;
+            # Fonts
+            ttf-jetbrains-mono-nerd) echo "google-jetbrains-mono-fonts" ;;
+            noto-emoji-color-fonts)  echo "google-noto-color-emoji-fonts" ;;
+            google-noto-sans-fonts)  echo "google-noto-sans-fonts" ;;
+            # Everything else passes through unchanged
+            *)                        echo "$name" ;;
         esac
     else
         echo "$name"
@@ -304,7 +307,7 @@ install_packages() {
         google-noto-sans-fonts
     )
 
-    ALL_PKGS=("${CORE_PKGS[@]}" "${DISPLAY_PKGS[@]}" "${AUDIO_PKGS[@]}" "${UTIL_PKGS[@]}" "${OPTIONAL_PKGS[@]}" "${AUR_PKGS[@]}" "${FONT_PKGS[@]}")
+    ALL_PKGS=("${CORE_PKGS[@]}" "${DISPLAY_PKGS[@]}" "${AUDIO_PKGS[@]}" "${UTIL_PKGS[@]}" "${OPTIONAL_PKGS[@]}" "${FONT_PKGS[@]}")
 
     # Check what's already installed
     local missing=()
@@ -383,6 +386,40 @@ install_packages() {
                     esac
                 done
             fi
+
+            # Handle third-party packages (brave, impala, bluetui) — not in any repo
+            # Ensure dnf-plugins-core is available for repo management
+            sudo dnf install -y dnf-plugins-core 2>/dev/null || true
+
+            for pkg in "${AUR_PKGS[@]}"; do
+                local rpkg
+                rpkg=$(pkg_name "$pkg")
+                if ! pkg_installed "$rpkg"; then
+                    case "$pkg" in
+                        brave-browser)
+                            log_step "Setting up Brave browser..."
+                            sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo 2>/dev/null
+                            sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc 2>/dev/null
+                            if sudo dnf install -y brave-browser 2>/dev/null; then
+                                log_success "Brave browser installed"
+                            else
+                                log_warn "Brave install failed — install manually from https://brave.com/download"
+                            fi
+                            ;;
+                        impala)
+                            log_info "  impala: Install from https://github.com/pythops/impala"
+                            ;;
+                        bluetui)
+                            if command -v cargo &>/dev/null; then
+                                log_step "Installing bluetui via cargo..."
+                                cargo install bluetui 2>/dev/null && log_success "bluetui installed" || log_warn "bluetui install failed"
+                            else
+                                log_info "  bluetui: Install rust first (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh), then: cargo install bluetui"
+                            fi
+                            ;;
+                    esac
+                fi
+            done
         else
             # Arch: split into repo vs AUR
             local aur_pkgs=()
@@ -427,6 +464,19 @@ install_packages() {
                     log_info "Install yay: git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si"
                 fi
             fi
+
+            # Handle third-party packages (brave, impala, bluetui)
+            for pkg in "${AUR_PKGS[@]}"; do
+                local rpkg
+                rpkg=$(pkg_name "$pkg")
+                if ! pkg_installed "$rpkg"; then
+                    case "$pkg" in
+                        brave-browser|impala|bluetui)
+                            log_warn "$pkg: not in official repos, install manually or via AUR helper"
+                            ;;
+                    esac
+                fi
+            done
         fi
     else
         log_success "All packages already installed"
