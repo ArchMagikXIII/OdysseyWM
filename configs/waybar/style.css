@@ -2,8 +2,8 @@
 @import "theme/widgets.css";
 
 * {
-    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono";
-    font-size: 16px;
+    font-family: "JetBrainsMono Nerd Font", sans-serif;
+    font-size: 14px;
     border: none;
     border-radius: 0;
 }
@@ -18,10 +18,8 @@ window#waybar {
 }
 
 #workspaces button {
-    font-size: 22px;
-    padding: 4px 12px;
-    margin: 0 2px;
-    min-width: 30px;
+    font-size: 18px;
+    padding: 0 5px;
 }
 
 #workspaces button.focused {
@@ -31,4 +29,8 @@ window#waybar {
 
 #workspaces button:hover {
     background: #3a2566;
+}
+
+#network, #bluetooth, #battery, #pulseaudio {
+    font-size: 16px;
 }
