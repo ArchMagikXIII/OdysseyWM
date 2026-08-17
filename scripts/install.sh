@@ -87,7 +87,7 @@ detect_distro() {
 
     . /etc/os-release
 
-    if [[ "$ID" == "arch" || "$ID_LIKE" == *"arch"* ]]; then
+    if [[ "$ID" == "arch" || "${ID_LIKE:-}" == *"arch"* ]]; then
         DISTRO="arch"
         log_info "Detected Arch-based system: ${NAME:-Arch Linux}"
     else
