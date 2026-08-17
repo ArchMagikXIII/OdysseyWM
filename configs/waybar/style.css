@@ -9,17 +9,26 @@
 }
 
 window#waybar {
-    background: #000000;
+    background: transparent;
     color: #ffffff;
+    margin: 8px 12px;
+}
 
-    border-radius: 14px;
-
-    margin: 8px;
+/* Left pill - workspaces */
+#workspaces {
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 2px 6px;
+    margin-right: 8px;
 }
 
 #workspaces button {
     font-size: 18px;
-    padding: 0 5px;
+    padding: 4px 10px;
+    min-width: 32px;
+    border-radius: 12px;
+    background: transparent;
+    color: #888;
 }
 
 #workspaces button.focused {
@@ -29,8 +38,41 @@ window#waybar {
 
 #workspaces button:hover {
     background: #3a2566;
+    color: #ffffff;
 }
 
-#network, #bluetooth, #battery, #pulseaudio {
+/* Center pill - branding + clock */
+#custom-odyssey,
+#clock {
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 2px 14px;
+    margin: 0 4px;
+}
+
+/* Right pill modules */
+#cpu,
+#memory,
+#custom-gpu-amd,
+#custom-gpu-nvidia,
+#network,
+#bluetooth,
+#pulseaudio,
+#pulseaudio-slider,
+#battery {
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 2px 10px;
     font-size: 16px;
 }
+
+/* Space between right modules */
+#cpu         { margin-left: 4px; }
+#memory      { margin-left: 4px; }
+#custom-gpu-amd   { margin-left: 4px; }
+#custom-gpu-nvidia { margin-left: 4px; }
+#network     { margin-left: 4px; }
+#bluetooth   { margin-left: 4px; }
+#pulseaudio  { margin-left: 4px; }
+#pulseaudio-slider { margin-left: 4px; }
+#battery     { margin-left: 4px; margin-right: 4px; }
