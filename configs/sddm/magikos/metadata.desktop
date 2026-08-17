@@ -1,0 +1,7 @@
+[SddmGreeterTheme]
+Name=MagikOS
+Description=Minimal login theme for MagikOS with dark purple aesthetic
+Author=MagikOS
+Type=sddm-theme
+Version=1.0
+Website=https://github.com/magikxiii/OdysseyWM
