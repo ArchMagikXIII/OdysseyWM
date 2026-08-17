@@ -655,55 +655,75 @@ deploy_configs() {
             sudo dnf install -y jetbrains-mono-fonts-all 2>/dev/null || true
         fi
 
-        # Configure bashrc
-        log_step "Configuring bash prompt..."
-        local BASHRC="$TARGET_HOME/.bashrc"
+        # Configure shell
+        local USER_SHELL_PATH
+        USER_SHELL_PATH=$(getent passwd "$USERNAME" 2>/dev/null | cut -d: -f7 || echo "/bin/bash")
+        local SHELL_NAME
+        SHELL_NAME=$(basename "$USER_SHELL_PATH")
 
-        # Add oh-my-posh init if not present
-        if ! grep -q 'oh-my-posh init bash' "$BASHRC" 2>/dev/null; then
-            cat >> "$BASHRC" << 'BASH_EOF'
+        if [[ "$SHELL_NAME" == "fish" ]]; then
+            log_step "Configuring fish shell prompt..."
+            local FISH_CONFIG="$TARGET_HOME/.config/fish/config.fish"
+            mkdir -p "$TARGET_HOME/.config/fish"
+
+            if ! grep -q 'oh-my-posh init fish' "$FISH_CONFIG" 2>/dev/null; then
+                cat >> "$FISH_CONFIG" << 'FISH_EOF'
+
+# Oh My Posh prompt
+oh-my-posh init fish --config ~/.cache/oh-my-posh/themes/night-owl.omp.json | source
+FISH_EOF
+                log_success "oh-my-posh init added to config.fish"
+            fi
+        else
+            log_step "Configuring bash prompt..."
+            local BASHRC="$TARGET_HOME/.bashrc"
+
+            if ! grep -q 'oh-my-posh init bash' "$BASHRC" 2>/dev/null; then
+                cat >> "$BASHRC" << 'BASH_EOF'
 
 # Oh My Posh prompt
 eval "$(oh-my-posh init bash --config ~/.cache/oh-my-posh/themes/night-owl.omp.json)"
 BASH_EOF
-            log_success "oh-my-posh init added to .bashrc"
-        fi
+                log_success "oh-my-posh init added to .bashrc"
+            fi
 
-        # Enable bash completion
-        if ! grep -q 'bash_completion' "$BASHRC" 2>/dev/null; then
-            cat >> "$BASHRC" << 'BASH_EOF'
+            # Enable bash completion
+            if ! grep -q 'bash_completion' "$BASHRC" 2>/dev/null; then
+                cat >> "$BASHRC" << 'BASH_EOF'
 
 # Bash completion
 [[ -f /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
 [[ -f /etc/bash_completion ]] && . /etc/bash_completion
 BASH_EOF
-            log_success "bash completion enabled"
-        fi
+                log_success "bash completion enabled"
+            fi
 
-        # Install bash-autosuggestions for autofill
-        if [[ ! -d "$TARGET_HOME/.local/share/bash-autosuggestions" ]]; then
-            log_step "Installing bash-autosuggestions..."
-            mkdir -p "$TARGET_HOME/.local/share/bash-autosuggestions"
-            curl -sL "https://raw.githubusercontent.com/yogeek/bash-autosuggestions/main/bash-autosuggestions.sh" \
-                -o "$TARGET_HOME/.local/share/bash-autosuggestions/bash-autosuggestions.sh" 2>/dev/null \
-                && log_success "bash-autosuggestions installed" \
-                || log_warn "bash-autosuggestions install failed"
-        fi
+            # Install bash-autosuggestions for autofill
+            if [[ ! -d "$TARGET_HOME/.local/share/bash-autosuggestions" ]]; then
+                log_step "Installing bash-autosuggestions..."
+                mkdir -p "$TARGET_HOME/.local/share/bash-autosuggestions"
+                curl -sL "https://raw.githubusercontent.com/yogeek/bash-autosuggestions/main/bash-autosuggestions.sh" \
+                    -o "$TARGET_HOME/.local/share/bash-autosuggestions/bash-autosuggestions.sh" 2>/dev/null \
+                    && log_success "bash-autosuggestions installed" \
+                    || log_warn "bash-autosuggestions install failed"
+            fi
 
-        if [[ -f "$TARGET_HOME/.local/share/bash-autosuggestions/bash-autosuggestions.sh" ]]; then
-            if ! grep -q 'bash-autosuggestions' "$BASHRC" 2>/dev/null; then
-                cat >> "$BASHRC" << 'BASH_EOF'
+            if [[ -f "$TARGET_HOME/.local/share/bash-autosuggestions/bash-autosuggestions.sh" ]]; then
+                if ! grep -q 'bash-autosuggestions' "$BASHRC" 2>/dev/null; then
+                    cat >> "$BASHRC" << 'BASH_EOF'
 
 # Fish-like autosuggestions (Right arrow to accept)
 [[ -f ~/.local/share/bash-autosuggestions/bash-autosuggestions.sh ]] && \
     bind '"\C- ": history-search-backward' && \
     source ~/.local/share/bash-autosuggestions/bash-autosuggestions.sh
 BASH_EOF
+                fi
             fi
         fi
 
         if [[ "$CREATE_USER" == "true" ]]; then
-            chown "$USERNAME:$USERNAME" "$BASHRC"
+            chown "$USERNAME:$USERNAME" "$BASHRC" 2>/dev/null || true
+            chown -R "$USERNAME:$USERNAME" "$TARGET_HOME/.config/fish" 2>/dev/null || true
         fi
     fi
 }
