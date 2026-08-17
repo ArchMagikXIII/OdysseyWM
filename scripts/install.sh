@@ -503,6 +503,13 @@ deploy_configs() {
     section "Configuration Deployment"
 
     local CONF_DIR="$PROJECT_DIR/configs"
+
+    if [[ ! -d "$CONF_DIR" ]]; then
+        log_error "Config source not found: $CONF_DIR"
+        log_error "Make sure you cloned the full OdysseyWM repo"
+        return 1
+    fi
+
     local BACKUP_DIR="$HOME/.config/odysseywm-backup/$(date +%Y%m%d_%H%M%S)"
 
     # Check if configs are already deployed
@@ -600,9 +607,15 @@ install_sddm_theme() {
     local SDDM_SRC="$PROJECT_DIR/configs/sddm/magikos"
     local SDDM_DEST="/usr/share/sddm/themes/magikos"
 
+    if [[ ! -d "$SDDM_SRC" ]]; then
+        log_error "SDDM theme source not found: $SDDM_SRC"
+        log_error "Make sure you cloned the full OdysseyWM repo"
+        return 1
+    fi
+
     log_step "Installing MagikOS SDDM theme..."
     mkdir -p "$SDDM_DEST"
-    cp "$SDDM_SRC"/* "$SDDM_DEST/"
+    cp -r "$SDDM_SRC"/* "$SDDM_DEST/"
 
     # Install SDDM Wayland compositor config
     mkdir -p /etc/sddm.conf.d
@@ -642,9 +655,15 @@ install_plymouth_theme() {
     local PLY_SRC="$PROJECT_DIR/configs/plymouth/magikos"
     local PLY_DEST="/usr/share/plymouth/themes/magikos"
 
+    if [[ ! -d "$PLY_SRC" ]]; then
+        log_error "Plymouth theme source not found: $PLY_SRC"
+        log_error "Make sure you cloned the full OdysseyWM repo"
+        return 1
+    fi
+
     log_step "Installing MagikOS Plymouth theme..."
     mkdir -p "$PLY_DEST"
-    cp "$PLY_SRC"/* "$PLY_DEST/"
+    cp -r "$PLY_SRC"/* "$PLY_DEST/"
 
     # Set as default theme
     if command -v plymouth-set-default-theme &>/dev/null; then
