@@ -716,9 +716,19 @@ configure_bootloader() {
 enable_services() {
     section "Service Configuration"
 
+    # Set graphical.target as default (sway-systemd can override this to multi-user)
+    systemctl set-default graphical.target 2>/dev/null || true
+    local current_target
+    current_target=$(systemctl get-default 2>/dev/null)
+    if [[ "$current_target" != "graphical.target" ]]; then
+        log_warn "Default target is $current_target, forcing graphical.target"
+        systemctl set-default graphical.target 2>/dev/null || true
+    fi
+    log_success "Default target: $(systemctl get-default 2>/dev/null)"
+
     # Enable SDDM
     if systemctl list-unit-files | grep -q "sddm.service"; then
-        systemctl enable sddm.service
+        systemctl enable sddm.service 2>/dev/null || true
         log_success "SDDM service enabled"
     else
         log_warn "sddm.service not found — SDDM may need manual enabling"
