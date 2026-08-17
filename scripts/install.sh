@@ -337,6 +337,7 @@ install_packages() {
         fastfetch
         network-manager-applet
         bluez
+        bash-completion
     )
 
     # AUR/COPR-only packages (not in official repos)
@@ -624,6 +625,86 @@ deploy_configs() {
         echo '# Cargo (Rust)' >> "$PROFILE"
         echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> "$PROFILE"
         log_success "cargo PATH configured"
+    fi
+
+    # Setup oh-my-posh with night-owl theme
+    if ! command -v oh-my-posh &>/dev/null; then
+        log_step "Installing oh-my-posh..."
+        curl -s https://ohmyposh.dev/install.sh | bash -s 2>/dev/null && log_success "oh-my-posh installed" || log_warn "oh-my-posh install failed"
+    else
+        log_info "oh-my-posh already installed"
+    fi
+
+    if command -v oh-my-posh &>/dev/null; then
+        # Cache themes dir
+        local OMP_THEMES
+        OMP_THEMES=$(oh-my-posh get themes-dir 2>/dev/null || echo "$TARGET_HOME/.cache/oh-my-posh/themes")
+
+        # Download night-owl theme
+        log_step "Setting up night-owl theme..."
+        mkdir -p "$OMP_THEMES"
+        if [[ ! -f "$OMP_THEMES/night-owl.omp.json" ]]; then
+            curl -sL "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/night-owl.omp.json" \
+                -o "$OMP_THEMES/night-owl.omp.json" 2>/dev/null \
+                && log_success "night-owl theme downloaded" \
+                || log_warn "night-owl theme download failed"
+        fi
+
+        # Install Nerd Font (required for oh-my-posh glyphs)
+        if [[ "$DISTRO" == "fedora" ]]; then
+            sudo dnf install -y jetbrains-mono-fonts-all 2>/dev/null || true
+        fi
+
+        # Configure bashrc
+        log_step "Configuring bash prompt..."
+        local BASHRC="$TARGET_HOME/.bashrc"
+
+        # Add oh-my-posh init if not present
+        if ! grep -q 'oh-my-posh init bash' "$BASHRC" 2>/dev/null; then
+            cat >> "$BASHRC" << 'BASH_EOF'
+
+# Oh My Posh prompt
+eval "$(oh-my-posh init bash --config ~/.cache/oh-my-posh/themes/night-owl.omp.json)"
+BASH_EOF
+            log_success "oh-my-posh init added to .bashrc"
+        fi
+
+        # Enable bash completion
+        if ! grep -q 'bash_completion' "$BASHRC" 2>/dev/null; then
+            cat >> "$BASHRC" << 'BASH_EOF'
+
+# Bash completion
+[[ -f /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
+[[ -f /etc/bash_completion ]] && . /etc/bash_completion
+BASH_EOF
+            log_success "bash completion enabled"
+        fi
+
+        # Install bash-autosuggestions for autofill
+        if [[ ! -d "$TARGET_HOME/.local/share/bash-autosuggestions" ]]; then
+            log_step "Installing bash-autosuggestions..."
+            mkdir -p "$TARGET_HOME/.local/share/bash-autosuggestions"
+            curl -sL "https://raw.githubusercontent.com/yogeek/bash-autosuggestions/main/bash-autosuggestions.sh" \
+                -o "$TARGET_HOME/.local/share/bash-autosuggestions/bash-autosuggestions.sh" 2>/dev/null \
+                && log_success "bash-autosuggestions installed" \
+                || log_warn "bash-autosuggestions install failed"
+        fi
+
+        if [[ -f "$TARGET_HOME/.local/share/bash-autosuggestions/bash-autosuggestions.sh" ]]; then
+            if ! grep -q 'bash-autosuggestions' "$BASHRC" 2>/dev/null; then
+                cat >> "$BASHRC" << 'BASH_EOF'
+
+# Fish-like autosuggestions (Right arrow to accept)
+[[ -f ~/.local/share/bash-autosuggestions/bash-autosuggestions.sh ]] && \
+    bind '"\C- ": history-search-backward' && \
+    source ~/.local/share/bash-autosuggestions/bash-autosuggestions.sh
+BASH_EOF
+            fi
+        fi
+
+        if [[ "$CREATE_USER" == "true" ]]; then
+            chown "$USERNAME:$USERNAME" "$BASHRC"
+        fi
     fi
 }
 
@@ -970,6 +1051,7 @@ main() {
     create_user
     install_packages
     deploy_configs
+    setup_shell
     install_sddm_theme
     install_plymouth_theme
     configure_bootloader
