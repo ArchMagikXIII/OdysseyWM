@@ -101,7 +101,12 @@
 
     "battery": {
         "format": "{icon} {capacity}%",
-        "format-charging": "󰂄 {capacity}%"
+        "format-charging": "󰂄 {capacity}%",
+        "format-icons": {
+            "": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
+        },
+        "format-full": "󰁹 {capacity}%",
+        "format-low": "󰂃 {capacity}%"
     },
 
     "clock": {
