@@ -1,99 +1,32 @@
-#custom-odyssey,
-#cpu,
-#memory,
-#custom-gpu-amd,
-#custom-gpu-nvidia,
-#network,
-#bluetooth,
-#pulseaudio,
-#battery,
-#clock {
-    background: @surface;
-
-    padding: 0 12px;
-
-    margin: 5px;
-
-    border-radius: 10px;
-
-    color: @text;
-}
-
-#network,
-#bluetooth {
-    font-size: 18px;
-}
-
-#pulseaudio-slider {
-    background: @surface;
-
-    padding: 0 10px;
-
-    margin: 5px;
-
-    border-radius: 10px;
-
-    min-width: 80px;
-}
-
-#pulseaudio-slider trough {
-    min-height: 4px;
-
-    min-width: 70px;
-
-    border-radius: 2px;
-
-    background-color: rgba(255, 255, 255, 0.15);
-}
-
-#pulseaudio-slider highlight {
-    min-height: 4px;
-
-    border-radius: 2px;
-
-    background-color: #000000;
-}
-
-#pulseaudio-slider slider {
-    min-height: 10px;
-
-    min-width: 10px;
-
-    border-radius: 50%;
-
-    background-color: @text;
-
-    box-shadow: none;
-}
-
 #workspaces {
     background: transparent;
 }
 
 #workspaces button {
     background: transparent;
-
-    color: @text-muted;
-
-    padding: 0 6px;
-
-    margin: 5px 2px;
-
-    border-radius: 50%;
-
-    min-width: 18px;
-
-    min-height: 18px;
-}
-
-#workspaces button:hover {
-    color: @text;
 }
 
 #workspaces button.focused {
-    color: @accent;
+    background: transparent;
 }
 
-#workspaces button.urgent {
-    color: #ff5f56;
+#pulseaudio-slider trough {
+    min-height: 4px;
+    min-width: 70px;
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+#pulseaudio-slider highlight {
+    min-height: 4px;
+    border-radius: 2px;
+    background-color: #e0e0e0;
+}
+
+#pulseaudio-slider slider {
+    min-height: 10px;
+    min-width: 10px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    box-shadow: none;
 }
