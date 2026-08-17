@@ -360,12 +360,15 @@ install_packages() {
                 # Ensure dnf-plugins-core is available for repo management
                 sudo dnf install -y dnf-plugins-core 2>/dev/null || true
 
+                # Add Brave browser repo upfront
+                log_step "Adding Brave browser repo..."
+                sudo dnf config-manager addrepo --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo 2>/dev/null || true
+                sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc 2>/dev/null || true
+
                 for pkg in "${thirdparty_pkgs[@]}"; do
                     case "$pkg" in
                         brave-browser)
-                            log_step "Setting up Brave browser repo..."
-                            sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo 2>/dev/null
-                            sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc 2>/dev/null
+                            log_step "Installing Brave browser..."
                             if sudo dnf install -y brave-browser 2>/dev/null; then
                                 log_success "Brave browser installed"
                             else
