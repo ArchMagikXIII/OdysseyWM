@@ -291,6 +291,7 @@ install_packages() {
         flameshot
         fastfetch
         network-manager-applet
+        bluez
     )
 
     # AUR/COPR-only packages (not in official repos)
@@ -729,6 +730,13 @@ enable_services() {
     if systemctl list-unit-files | grep -q "NetworkManager.service"; then
         systemctl enable NetworkManager.service 2>/dev/null || true
         log_success "NetworkManager enabled"
+    fi
+
+    # Enable Bluetooth if present
+    if systemctl list-unit-files | grep -q "bluetooth.service"; then
+        systemctl enable bluetooth.service 2>/dev/null || true
+        systemctl start bluetooth.service 2>/dev/null || true
+        log_success "Bluetooth enabled"
     fi
 }
 
