@@ -1,12 +1,12 @@
 #!/bin/bash
 # =============================================================================
 #
-#   ███╗   ███╗██╗ ██████╗ ██████╗  ██████╗ ██╗     ██╗ ██████╗
-#   ████╗ ████║██║██╔════╝ ██╔══██╗██╔═══██╗██║     ██║██╔═══██╗
-#   ██╔████╔██║██║██║  ███╗██████╔╝██║   ██║██║     ██║██║   ██║
-#   ██║╚██╔╝██║██║██║   ██║██╔══██╗██║   ██║██║     ██║██║   ██║
-#   ██║ ╚═╝ ██║██║╚██████╔╝██║  ██║╚██████╔╝███████╗██║╚██████╔╝
-#   ╚═╝     ╚═╝╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝ ╚═════╝
+#   ███╗   ███╗ █████╗ ███████╗ ██████╗ ███╗   ██╗
+#   ████╗ ████║██╔══██╗██╔════╝██╔═══██╗████╗  ██║
+#   ██╔████╔██║███████║███████╗██║   ██║██╔██╗ ██║
+#   ██║╚██╔╝██║██╔══██║╚════██║██║   ██║██║╚██╗██║
+#   ██║ ╚═╝ ██║██║  ██║███████║╚██████╔╝██║ ╚████║
+#   ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝
 #
 #   Sway Desktop Environment — Navigate Beyond
 #   https://github.com/ArchMagikXIII/OdysseyWM
@@ -41,12 +41,12 @@ print_banner() {
     echo -e "${PURPLE}"
     cat << 'BANNER'
 
-   ███╗   ███╗██╗ ██████╗ ██████╗  ██████╗ ██╗     ██╗ ██████╗
-   ████╗ ████║██║██╔════╝ ██╔══██╗██╔═══██╗██║     ██║██╔═══██╗
-   ██╔████╔██║██║██║  ███╗██████╔╝██║   ██║██║     ██║██║   ██║
-   ██║╚██╔╝██║██║██║   ██║██╔══██╗██║   ██║██║     ██║██║   ██║
-   ██║ ╚═╝ ██║██║╚██████╔╝██║  ██║╚██████╔╝███████╗██║╚██████╔╝
-   ╚═╝     ╚═╝╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝ ╚═════╝
+   ███╗   ███╗ █████╗ ███████╗ ██████╗ ███╗   ██╗
+   ████╗ ████║██╔══██╗██╔════╝██╔═══██╗████╗  ██║
+   ██╔████╔██║███████║███████╗██║   ██║██╔██╗ ██║
+   ██║╚██╔╝██║██╔══██║╚════██║██║   ██║██║╚██╗██║
+   ██║ ╚═╝ ██║██║  ██║███████║╚██████╔╝██║ ╚████║
+   ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝
 
 BANNER
     echo -e "${NC}"
@@ -89,16 +89,22 @@ detect_distro() {
 
     if [[ "$ID" == "arch" || "${ID_LIKE:-}" == *"arch"* ]]; then
         DISTRO="arch"
+        PKGMGR="pacman"
         log_info "Detected Arch-based system: ${NAME:-Arch Linux}"
+    elif [[ "$ID" == "fedora" || "${ID_LIKE:-}" == *"rhel"* || "${ID_LIKE:-}" == *"fedora"* ]]; then
+        DISTRO="fedora"
+        PKGMGR="dnf"
+        log_info "Detected Fedora-based system: ${NAME:-Fedora}"
     else
-        log_error "MagikOS installer supports Arch Linux and derivatives only"
+        log_error "MagikOS installer supports Arch and Fedora derivatives"
         log_error "Detected: ${NAME:-Unknown} ($ID)"
         exit 1
     fi
 }
 
 check_network() {
-    if ! ping -c 1 archlinux.org &>/dev/null; then
+    local test_host="1.1.1.1"
+    if ! ping -c 1 "$test_host" &>/dev/null; then
         log_warn "No internet connection detected — package installation may fail"
         read -p "  Continue anyway? [Y/n]: " CONT
         if [[ "${CONT:-Y}" =~ ^[Nn]$ ]]; then
@@ -183,6 +189,41 @@ setup_user() {
 
 # ----------------------------------------- Package Installation -----------------------------------------
 
+# Map package names between Arch and Fedora
+pkg_name() {
+    local name="$1"
+    if [[ "$DISTRO" == "fedora" ]]; then
+        case "$name" in
+            qt6-declarative)        echo "qt6-qtdeclarative" ;;
+            polkit-gnome)           echo "polkit-gnome" ;;
+            network-manager-applet) echo "NetworkManager-applet" ;;
+            ttf-jetbrains-mono-nerd) echo "jetbrains-mono-nerd-fonts" ;;
+            xdg-desktop-portal-wlr) echo "xdg-desktop-portal-wlr" ;;
+            *)                      echo "$name" ;;
+        esac
+    else
+        echo "$name"
+    fi
+}
+
+pkg_installed() {
+    local name="$1"
+    if [[ "$DISTRO" == "fedora" ]]; then
+        rpm -q "$name" &>/dev/null
+    else
+        pacman -Qi "$name" &>/dev/null 2>&1
+    fi
+}
+
+pkg_in_repo() {
+    local name="$1"
+    if [[ "$DISTRO" == "fedora" ]]; then
+        dnf repoquery --quiet "$name" &>/dev/null 2>&1
+    else
+        pacman -Si "$name" &>/dev/null 2>&1
+    fi
+}
+
 install_packages() {
     section "Package Installation"
 
@@ -209,13 +250,17 @@ install_packages() {
 
     # Optional but recommended
     OPTIONAL_PKGS=(
-        brave-browser
         flameshot
         fastfetch
-        impala
-        bluetui
         network-manager-applet
         xdg-desktop-portal-wlr
+    )
+
+    # AUR/COPR-only packages (not in official repos)
+    AUR_PKGS=(
+        brave-browser
+        impala
+        bluetui
     )
 
     # Fonts
@@ -223,72 +268,113 @@ install_packages() {
         ttf-jetbrains-mono-nerd
     )
 
-    ALL_PKGS=("${CORE_PKGS[@]}" "${DISPLAY_PKGS[@]}" "${OPTIONAL_PKGS[@]}" "${FONT_PKGS[@]}")
+    ALL_PKGS=("${CORE_PKGS[@]}" "${DISPLAY_PKGS[@]}" "${OPTIONAL_PKGS[@]}" "${AUR_PKGS[@]}" "${FONT_PKGS[@]}")
 
     # Check what's already installed
     local missing=()
-    local installed=()
+    local installed_count=0
 
     for pkg in "${ALL_PKGS[@]}"; do
-        # Handle AUR package name differences
-        local check_name="$pkg"
-        case "$pkg" in
-            brave-browser)   check_name="brave-browser" ;;
-            impala)          check_name="impala" ;;
-            bluetui)         check_name="bluetui" ;;
-        esac
-
-        if pacman -Qi "$check_name" &>/dev/null 2>&1; then
-            installed+=("$pkg")
+        local rpkg
+        rpkg=$(pkg_name "$pkg")
+        if pkg_installed "$rpkg"; then
+            ((installed_count++))
         else
             missing+=("$pkg")
         fi
     done
 
-    log_info "${#installed[@]} packages already installed"
+    log_info "${installed_count} packages already installed"
     if [[ ${#missing[@]} -gt 0 ]]; then
         log_warn "${#missing[@]} packages need installation: ${missing[*]}"
         echo ""
 
-        # Check for AUR packages
-        local aur_pkgs=()
-        local repo_pkgs=()
-        for pkg in "${missing[@]}"; do
-            if pacman -Si "$pkg" &>/dev/null 2>&1; then
-                repo_pkgs+=("$pkg")
-            else
-                aur_pkgs+=("$pkg")
-            fi
-        done
+        if [[ "$DISTRO" == "fedora" ]]; then
+            # Fedora: split into repo vs third-party
+            local repo_pkgs=()
+            local thirdparty_pkgs=()
+            for pkg in "${missing[@]}"; do
+                local rpkg
+                rpkg=$(pkg_name "$pkg")
+                if pkg_in_repo "$rpkg"; then
+                    repo_pkgs+=("$rpkg")
+                else
+                    thirdparty_pkgs+=("$pkg")
+                fi
+            done
 
-        # Install official repo packages
-        if [[ ${#repo_pkgs[@]} -gt 0 ]]; then
-            log_step "Installing from official repositories..."
-            if ! pacman -S --noconfirm --needed "${repo_pkgs[@]}"; then
-                log_error "Failed to install repo packages"
-                log_error "Try manually: sudo pacman -S ${repo_pkgs[*]}"
-                exit 1
+            # Install official repo packages
+            if [[ ${#repo_pkgs[@]} -gt 0 ]]; then
+                log_step "Installing from Fedora repositories..."
+                if ! sudo dnf install -y "${repo_pkgs[@]}"; then
+                    log_error "Failed to install packages: ${repo_pkgs[*]}"
+                    log_error "Try manually: sudo dnf install ${repo_pkgs[*]}"
+                else
+                    log_success "Official packages installed"
+                fi
             fi
-            log_success "Official packages installed"
-        fi
 
-        # Handle AUR packages
-        if [[ ${#aur_pkgs[@]} -gt 0 ]]; then
-            log_warn "AUR packages detected: ${aur_pkgs[*]}"
-            if command -v yay &>/dev/null; then
-                log_step "Installing AUR packages with yay..."
-                yay -S --noconfirm --needed "${aur_pkgs[@]}" || {
-                    log_warn "Some AUR packages failed — install manually later"
-                }
-            elif command -v paru &>/dev/null; then
-                log_step "Installing AUR packages with paru..."
-                paru -S --noconfirm --needed "${aur_pkgs[@]}" || {
-                    log_warn "Some AUR packages failed — install manually later"
-                }
-            else
-                log_warn "No AUR helper found (yay/paru). Skipping AUR packages:"
-                log_warn "  ${aur_pkgs[*]}"
-                log_info "Install yay: git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si"
+            # Handle third-party packages
+            if [[ ${#thirdparty_pkgs[@]} -gt 0 ]]; then
+                log_warn "Third-party packages detected: ${thirdparty_pkgs[*]}"
+                log_info "These may need COPR repos or manual installation:"
+                for pkg in "${thirdparty_pkgs[@]}"; do
+                    case "$pkg" in
+                        brave-browser)
+                            log_info "  brave-browser: sudo dnf install dnf-plugins-core && sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo && sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc && sudo dnf install brave-browser"
+                            ;;
+                        impala)
+                            log_info "  impala: Install from https://github.com/pythops/impala"
+                            ;;
+                        bluetui)
+                            log_info "  bluetui: cargo install bluetui"
+                            ;;
+                    esac
+                done
+            fi
+        else
+            # Arch: split into repo vs AUR
+            local aur_pkgs=()
+            local repo_pkgs=()
+            for pkg in "${missing[@]}"; do
+                local rpkg
+                rpkg=$(pkg_name "$pkg")
+                if pkg_in_repo "$rpkg"; then
+                    repo_pkgs+=("$rpkg")
+                else
+                    aur_pkgs+=("$pkg")
+                fi
+            done
+
+            # Install official repo packages
+            if [[ ${#repo_pkgs[@]} -gt 0 ]]; then
+                log_step "Installing from official repositories..."
+                if ! sudo pacman -S --noconfirm --needed "${repo_pkgs[@]}"; then
+                    log_error "Failed to install repo packages"
+                    log_error "Try manually: sudo pacman -S ${repo_pkgs[*]}"
+                    exit 1
+                fi
+                log_success "Official packages installed"
+            fi
+
+            # Handle AUR packages
+            if [[ ${#aur_pkgs[@]} -gt 0 ]]; then
+                log_warn "AUR packages detected: ${aur_pkgs[*]}"
+                if command -v yay &>/dev/null; then
+                    log_step "Installing AUR packages with yay..."
+                    yay -S --noconfirm --needed "${aur_pkgs[@]}" || {
+                        log_warn "Some AUR packages failed — install manually later"
+                    }
+                elif command -v paru &>/dev/null; then
+                    log_step "Installing AUR packages with paru..."
+                    paru -S --noconfirm --needed "${aur_pkgs[@]}" || {
+                        log_warn "Some AUR packages failed — install manually later"
+                    }
+                else
+                    log_warn "No AUR helper found (yay/paru). Skipping AUR packages:"
+                    log_warn "  ${aur_pkgs[*]}"
+                    log_info "Install yay: git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si"
+                fi
             fi
         fi
     else
@@ -298,7 +384,9 @@ install_packages() {
     # Verify critical packages
     local critical_fail=false
     for pkg in sway sddm foot waybar fuzzel; do
-        if ! command -v "$pkg" &>/dev/null && ! pacman -Qi "$pkg" &>/dev/null 2>&1; then
+        local rpkg
+        rpkg=$(pkg_name "$pkg")
+        if ! command -v "$pkg" &>/dev/null && ! pkg_installed "$rpkg"; then
             log_error "Critical package missing: $pkg"
             critical_fail=true
         fi
@@ -472,20 +560,26 @@ install_plymouth_theme() {
 configure_bootloader() {
     section "Bootloader Configuration"
 
-    # Add plymouth hook to mkinitcpio
-    if ! grep -Eq '^HOOKS=.*plymouth' /etc/mkinitcpio.conf; then
-        log_step "Adding plymouth hook to mkinitcpio..."
-        sed -i '/^HOOKS=/s/base systemd/base systemd plymouth/' /etc/mkinitcpio.conf
-        log_success "Plymouth hook added"
+    if [[ "$DISTRO" == "fedora" ]]; then
+        # Fedora uses dracut — regenerate initramfs
+        log_step "Regenerating initramfs with dracut..."
+        sudo dracut --force --regenerate-all 2>/dev/null || log_warn "dracut had warnings (usually fine)"
+        log_success "initramfs regenerated"
     else
-        log_info "Plymouth hook already present in mkinitcpio"
+        # Arch uses mkinitcpio
+        if ! grep -Eq '^HOOKS=.*plymouth' /etc/mkinitcpio.conf; then
+            log_step "Adding plymouth hook to mkinitcpio..."
+            sed -i '/^HOOKS=/s/base systemd/base systemd plymouth/' /etc/mkinitcpio.conf
+            log_success "Plymouth hook added"
+        else
+            log_info "Plymouth hook already present in mkinitcpio"
+        fi
+
+        log_step "Regenerating initramfs..."
+        mkinitcpio -P 2>/dev/null || log_warn "initramfs regeneration had warnings (usually fine)"
     fi
 
-    # Regenerate initramfs
-    log_step "Regenerating initramfs..."
-    mkinitcpio -P 2>/dev/null || log_warn "initramfs regeneration had warnings (usually fine)"
-
-    # Configure bootloader splash
+    # Configure bootloader splash (works for both distros)
     if [[ -d /boot/loader/entries ]]; then
         log_step "Configuring systemd-boot with splash..."
         for entry in /boot/loader/entries/*.conf; do
@@ -636,12 +730,16 @@ verify_installation() {
         ((errors++))
     fi
 
-    # Check plymouth hook
-    if grep -Eq '^HOOKS=.*plymouth' /etc/mkinitcpio.conf; then
-        log_success "Plymouth hook in mkinitcpio"
+    # Check initramfs configuration
+    if [[ "$DISTRO" == "fedora" ]]; then
+        log_success "initramfs (dracut — regenerated at boot)"
     else
-        log_error "Plymouth hook missing from mkinitcpio"
-        ((errors++))
+        if grep -Eq '^HOOKS=.*plymouth' /etc/mkinitcpio.conf; then
+            log_success "Plymouth hook in mkinitcpio"
+        else
+            log_error "Plymouth hook missing from mkinitcpio"
+            ((errors++))
+        fi
     fi
 
     return $errors
