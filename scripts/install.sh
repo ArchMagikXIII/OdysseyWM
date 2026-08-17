@@ -194,12 +194,19 @@ pkg_name() {
     local name="$1"
     if [[ "$DISTRO" == "fedora" ]]; then
         case "$name" in
-            qt6-declarative)        echo "qt6-qtdeclarative" ;;
-            polkit-gnome)           echo "polkit-gnome" ;;
-            network-manager-applet) echo "NetworkManager-applet" ;;
+            qt6-declarative)         echo "qt6-qtdeclarative" ;;
+            network-manager-applet)  echo "NetworkManager-applet" ;;
             ttf-jetbrains-mono-nerd) echo "jetbrains-mono-nerd-fonts" ;;
-            xdg-desktop-portal-wlr) echo "xdg-desktop-portal-wlr" ;;
-            *)                      echo "$name" ;;
+            swaybg)                  echo "swaybg" ;;
+            wl-clipboard)            echo "wl-clipboard" ;;
+            grim)                    echo "grim" ;;
+            slurp)                   echo "slurp" ;;
+            swayidle)                echo "swayidle" ;;
+            mako)                    echo "mako" ;;
+            xdg-desktop-portal-wlr)  echo "xdg-desktop-portal-wlr" ;;
+            xdg-desktop-portal)      echo "xdg-desktop-portal" ;;
+            imv)                     echo "imv" ;;
+           *)                        echo "$name" ;;
         esac
     else
         echo "$name"
@@ -231,14 +238,22 @@ install_packages() {
     CORE_PKGS=(
         sway
         swaylock
+        swaybg
+        swayidle
         foot
         waybar
         fuzzel
         wofi
+        mako
         polkit-gnome
         brightnessctl
         playerctl
         pavucontrol
+        wl-clipboard
+        grim
+        slurp
+        xdg-desktop-portal
+        xdg-desktop-portal-wlr
     )
 
     # Display manager and boot splash
@@ -248,12 +263,31 @@ install_packages() {
         plymouth
     )
 
+    # Audio stack (Fedora needs these explicitly, Arch bundles them)
+    AUDIO_PKGS=(
+        pipewire
+        wireplumber
+        pipewire-pulseaudio
+    )
+
+    # System utilities
+    UTIL_PKGS=(
+        wget
+        curl
+        git
+        unzip
+        p7zip
+        file
+        htop
+        jq
+        imv
+    )
+
     # Optional but recommended
     OPTIONAL_PKGS=(
         flameshot
         fastfetch
         network-manager-applet
-        xdg-desktop-portal-wlr
     )
 
     # AUR/COPR-only packages (not in official repos)
@@ -266,9 +300,11 @@ install_packages() {
     # Fonts
     FONT_PKGS=(
         ttf-jetbrains-mono-nerd
+        noto-emoji-color-fonts
+        google-noto-sans-fonts
     )
 
-    ALL_PKGS=("${CORE_PKGS[@]}" "${DISPLAY_PKGS[@]}" "${OPTIONAL_PKGS[@]}" "${AUR_PKGS[@]}" "${FONT_PKGS[@]}")
+    ALL_PKGS=("${CORE_PKGS[@]}" "${DISPLAY_PKGS[@]}" "${AUDIO_PKGS[@]}" "${UTIL_PKGS[@]}" "${OPTIONAL_PKGS[@]}" "${AUR_PKGS[@]}" "${FONT_PKGS[@]}")
 
     # Check what's already installed
     local missing=()
@@ -314,20 +350,35 @@ install_packages() {
                 fi
             fi
 
-            # Handle third-party packages
+            # Handle third-party packages — attempt install where possible
             if [[ ${#thirdparty_pkgs[@]} -gt 0 ]]; then
-                log_warn "Third-party packages detected: ${thirdparty_pkgs[*]}"
-                log_info "These may need COPR repos or manual installation:"
+                log_warn "${#thirdparty_pkgs[@]} packages need third-party repos: ${thirdparty_pkgs[*]}"
+
+                # Ensure dnf-plugins-core is available for repo management
+                sudo dnf install -y dnf-plugins-core 2>/dev/null || true
+
                 for pkg in "${thirdparty_pkgs[@]}"; do
                     case "$pkg" in
                         brave-browser)
-                            log_info "  brave-browser: sudo dnf install dnf-plugins-core && sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo && sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc && sudo dnf install brave-browser"
+                            log_step "Setting up Brave browser repo..."
+                            sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo 2>/dev/null
+                            sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc 2>/dev/null
+                            if sudo dnf install -y brave-browser 2>/dev/null; then
+                                log_success "Brave browser installed"
+                            else
+                                log_warn "Brave install failed — install manually from https://brave.com/download"
+                            fi
                             ;;
                         impala)
                             log_info "  impala: Install from https://github.com/pythops/impala"
                             ;;
                         bluetui)
-                            log_info "  bluetui: cargo install bluetui"
+                            if command -v cargo &>/dev/null; then
+                                log_step "Installing bluetui via cargo..."
+                                cargo install bluetui 2>/dev/null && log_success "bluetui installed" || log_warn "bluetui install failed"
+                            else
+                                log_info "  bluetui: Install rust first (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh), then: cargo install bluetui"
+                            fi
                             ;;
                     esac
                 done
