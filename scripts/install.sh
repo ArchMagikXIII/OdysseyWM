@@ -228,7 +228,7 @@ pkg_installed() {
 pkg_in_repo() {
     local name="$1"
     if [[ "$DISTRO" == "fedora" ]]; then
-        dnf repoquery --quiet "$name" &>/dev/null 2>&1
+        dnf list --available --quiet "$name" &>/dev/null 2>&1
     else
         pacman -Si "$name" &>/dev/null 2>&1
     fi
