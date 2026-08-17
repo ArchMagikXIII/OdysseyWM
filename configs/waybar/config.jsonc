@@ -51,7 +51,7 @@
     },
 
     "custom/gpu-amd": {
-        "exec": "/home/magikxiii/.config/waybar/scripts/gpu_amd.sh",
+        "exec": "~/.config/waybar/scripts/gpu_amd.sh",
         "return-type": "json",
         "format": "󰢮 {}",
         "interval": 2,
@@ -59,7 +59,7 @@
     },
 
     "custom/gpu-nvidia": {
-        "exec": "/home/magikxiii/.config/waybar/scripts/gpu_nvidia.sh",
+        "exec": "~/.config/waybar/scripts/gpu_nvidia.sh",
         "return-type": "json",
         "format": "󰢮 {}",
         "interval": 2,
