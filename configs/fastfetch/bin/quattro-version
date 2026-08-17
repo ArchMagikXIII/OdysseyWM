@@ -1,0 +1,4 @@
+#!/bin/bash
+# Quattro version — mirrors omarchy-version for fastfetch
+pkg=$(pacman -Q quattro 2>/dev/null | awk '{print $2}')
+[[ -n "$pkg" ]] && echo "$pkg" || echo "Quattro dev"
