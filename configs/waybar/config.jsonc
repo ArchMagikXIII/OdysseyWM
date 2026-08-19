@@ -38,7 +38,7 @@
             "2": "󰅴",
             "3": "󰖟",
             "4": "󰘐",
-            "5": ""
+            "5": ""
         }
     },
 
@@ -70,25 +70,25 @@
         "format-wifi": "󰤨",
         "format-ethernet": "󰈀",
         "format-disconnected": "󰤭",
-        "on-click": "foot -e impala"   
+        "on-click": "foot -e impala"
     },
 
     "bluetooth": {
-        "format": "",
-        "on-click": "foot -e bluetui"   
+        "format": "",
+        "on-click": "foot -e bluetui"
     },
 
     "pulseaudio": {
         "format": "{icon} {volume}%",
         "format-muted": "󰖁",
         "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["", "", ""]
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
         },
         "on-click": "pavucontrol"
     },
@@ -102,9 +102,7 @@
     "battery": {
         "format": "{icon} {capacity}%",
         "format-charging": "󰂄 {capacity}%",
-        "format-icons": {
-            "": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
-        },
+        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
         "format-full": "󰁹 {capacity}%",
         "format-low": "󰂃 {capacity}%"
     },
